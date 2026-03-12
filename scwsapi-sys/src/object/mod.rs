@@ -1,6 +1,8 @@
 mod certificate;
 mod key;
 
+use std::fmt::Debug;
+
 pub use certificate::*;
 pub use key::*;
 
@@ -18,7 +20,7 @@ pub enum ObjectType {
 #[wasm_bindgen]
 extern "C" {
     /// [SCWS.Object](https://idopte.fr/scwsapi/javascript/2_API/objects.html#SCWS.Object)
-    #[derive(Debug, Clone)]
+    #[derive(Clone)]
     pub type Object;
 
     /// The type of the object.
@@ -62,4 +64,14 @@ extern "C" {
     /// The data of the container
     #[wasm_bindgen(method, getter)]
     pub async fn getValue(this: &DataContainer) -> js_sys::Uint8Array;
+}
+
+impl Debug for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Object")
+            .field("id", &self.ck_id())
+            .field("label", &self.ck_label())
+            .field("type", &self.ty())
+            .finish_non_exhaustive()
+    }
 }

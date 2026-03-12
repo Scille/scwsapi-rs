@@ -1,6 +1,16 @@
 [package]
 name = "scwsapi"
 version = "0.1.0"
-edition = "2024"
+edition.workspace = true
 
 [dependencies]
+scwsapi-sys = { workspace = true }
+js-sys = { workspace = true }
+thiserror = { workspace = true }
+hex = { workspace = true }
+wasm-bindgen = { workspace = true }
+futures = { workspace = true }
+log = { workspace = true }
+rustls-pki-types = { workspace = true }
+sha2 = { workspace = true }
+serde-wasm-bindgen = { workspace = true }

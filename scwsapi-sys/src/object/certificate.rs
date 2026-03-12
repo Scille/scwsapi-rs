@@ -45,7 +45,7 @@ extern "C" {
     pub type Certificate;
 
     #[wasm_bindgen(method, getter, js_name = "ckId")]
-    fn ck_id(this: &Certificate) -> String;
+    pub fn ck_id(this: &Certificate) -> String;
 
     /// Is the certificate a root certificate (issuer and subject similar).
     #[wasm_bindgen(method, getter)]

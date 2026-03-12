@@ -1,14 +1,124 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+mod object;
+mod reader;
+mod token;
+
+use std::ops::Deref;
+
+use futures::{Stream, StreamExt};
+use wasm_bindgen::JsValue;
+
+pub struct Scws(scwsapi_sys::Scws);
+
+impl Default for Scws {
+    fn default() -> Self {
+        Self(scwsapi_sys::SCWS.with(Clone::clone))
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl Deref for Scws {
+    type Target = scwsapi_sys::Scws;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
+}
+
+impl Scws {
+    pub async fn find_service(
+        &self,
+        webapp_cert: &str,
+        challenge: &[u8],
+    ) -> Result<ServiceResponse, FindServiceError> {
+        let encoded_challenge = hex::encode(challenge);
+        let raw = self
+            .0
+            .find_service(webapp_cert, &encoded_challenge)
+            .await
+            .map_err(FindServiceError::FindError)?;
+
+        let challenge = {
+            let raw = raw.challenge();
+            hex::decode(String::from(raw))
+        }
+        .map_err(FindServiceError::InvalidChallenge)?;
+
+        let cryptogram = {
+            let raw = raw.cryptogram();
+            hex::decode(String::from(raw))
+        }
+        .map_err(FindServiceError::InvalidCryptogram)?;
+
+        let key_id = raw.key_id();
+
+        Ok(ServiceResponse {
+            challenge,
+            cryptogram,
+            key_id,
+        })
+    }
+
+    pub async fn create_environment(&self, signature: &[u8]) -> Result<(), CreateEnvironmentError> {
+        let encoded_signature = hex::encode(signature);
+        self.0
+            .create_environment(&encoded_signature)
+            .await
+            .map_err(CreateEnvironmentError::CreateError)
+    }
+
+    pub async fn update_reader_list(&self) -> Vec<reader::Reader> {
+        self.0
+            .update_reader_list()
+            .await
+            .into_iter()
+            .map(From::from)
+            .collect()
+    }
+
+    #[must_use = "Tokens are handles that need to be disconnected when not in use"]
+    pub fn iter_working_reader(&self) -> impl Stream<Item = token::Token> {
+        futures::stream::iter(self.readers()).filter_map(|r| async move {
+            r.connect()
+                .await
+                .inspect_err(|e| log::warn!("Failed to connect to reader#{}: {e:?}", r.name()))
+                .ok()
+                .map(|t| token::Token::new(t, Provenance::Hardware))
+        })
+    }
+
+    pub async fn get_soft_token(&self) -> token::Token {
+        let t = self.0.get_soft_token().await;
+        token::Token::new(t, Provenance::Software)
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum FindServiceError {
+    #[error("cannot find service")]
+    FindError(JsValue),
+    #[error("invalid service challenge value: {}", .0)]
+    InvalidChallenge(hex::FromHexError),
+    #[error("invalid service cryptogram value: {}", .0)]
+    InvalidCryptogram(hex::FromHexError),
+}
+
+pub struct ServiceResponse {
+    pub challenge: Vec<u8>,
+    pub cryptogram: Vec<u8>,
+    pub key_id: usize,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CreateEnvironmentError {
+    #[error("cannot create environment")]
+    CreateError(JsValue),
+}
+
+/// From where the object come from.
+///
+/// Used to determine which feature is available since there's some limitation on the software
+/// side.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Provenance {
+    Software,
+    Hardware,
 }

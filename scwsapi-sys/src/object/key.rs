@@ -20,7 +20,7 @@ extern "C" {
     pub type Key;
 
     #[wasm_bindgen(method, getter, js_name = "ckId")]
-    fn ck_id(this: &Key) -> String;
+    pub fn ck_id(this: &Key) -> String;
 
     #[wasm_bindgen(method, getter, js_name = "keyType")]
     pub fn key_type(this: &Key) -> KeyType;
@@ -60,4 +60,45 @@ extern "C" {
     /// Decrypts the provided data using a private key. The operation will use PKCS#1 padding.
     #[wasm_bindgen(catch, method)]
     pub async fn decrypt(this: &Key, ciphertext: &[u8]) -> Result<js_sys::ArrayBuffer, JsValue>;
+}
+
+#[derive(serde::Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct RsaPssPadding {
+    pub mgf: RsaPssMaskType,
+    pub salt_len: usize,
+}
+
+impl TryFrom<&RsaPssPadding> for JsValue {
+    type Error = serde_wasm_bindgen::Error;
+
+    fn try_from(value: &RsaPssPadding) -> Result<Self, Self::Error> {
+        serde_wasm_bindgen::to_value(value)
+    }
+}
+
+#[derive(serde::Serialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum RsaPssMaskType {
+    Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+#[derive(serde::Serialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum Pkcs1HashType {
+    Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+impl TryFrom<&Pkcs1HashType> for JsValue {
+    type Error = serde_wasm_bindgen::Error;
+
+    fn try_from(value: &Pkcs1HashType) -> Result<Self, Self::Error> {
+        serde_wasm_bindgen::to_value(value)
+    }
 }

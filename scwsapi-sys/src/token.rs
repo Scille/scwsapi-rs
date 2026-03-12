@@ -27,7 +27,7 @@ extern "C" {
     pub fn protected_auth_path(this: &Token) -> bool;
 
     #[wasm_bindgen(method, js_name = "getObjects")]
-    async fn get_objects(this: &Token) -> Vec<crate::object::Object>;
+    pub async fn get_objects(this: &Token) -> Vec<crate::object::Object>;
     /// Disconnects from the token.
     ///
     /// Must be called when the application terminates or before.

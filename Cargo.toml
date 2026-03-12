@@ -1,5 +1,6 @@
 [workspace]
 members = ["scwsapi", "scwsapi-sys"]
+resolver = "3"
 
 [workspace.package]
 edition = "2024"
@@ -11,3 +12,11 @@ wasm-bindgen = "0.2.114"
 wasm-bindgen-futures = "0.4.64"
 js-sys = "0.3.91"
 web-sys = "0.3.91"
+thiserror = "2.0.18"
+hex = "0.4.3"
+futures = "0.3.32"
+log = "0.4.29"
+rustls-pki-types = "1.14.0"
+sha2 = "0.10.9"
+serde = "1.0.228"
+serde-wasm-bindgen = "0.6.5"

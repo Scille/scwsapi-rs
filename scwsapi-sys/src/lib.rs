@@ -19,13 +19,16 @@ extern "C" {
     #[wasm_bindgen(method, getter)]
     pub fn version(this: &Scws) -> String;
 
+    #[wasm_bindgen(method, getter)]
+    pub fn readers(this: &Scws) -> Vec<reader::Reader>;
+
     /// Attempts to contact the local SCWS service.
     ///
     /// The ports on which the service can potentially be listening are scanned, and the first from which a consistent answer can be obtained is selected.
-    /// In order to authentify the local SCWS service, a random challenge should be given as a parameter.
+    /// In order to authenticate the local SCWS service, a random challenge should be given as a parameter.
     /// The local service will then sign it with its private key, and return the corresponding cryptogram that must be used to verify signature, using the corresponding Idopte public key.
     #[wasm_bindgen(catch, method, structural, js_name = "findService")]
-    async fn find_service(
+    pub async fn find_service(
         this: &Scws,
         webapp_cert: &str,
         challenge: &str,
@@ -43,13 +46,13 @@ extern "C" {
     /// If updates are made to the reader list within the processing, the appropriate event callbacks are called.
     /// The resulting value is the updated `SCWS.readers` array itself.
     #[wasm_bindgen(method, structural, js_name = "updateReaderList")]
-    async fn update_reader_list(this: &Scws) -> Vec<reader::Reader>;
+    pub async fn update_reader_list(this: &Scws) -> Vec<reader::Reader>;
 
     /// The software token is a virtual cryptographic token containing the certificates and keys that are available on the local machine.
     /// On Windows, the objects comes from the contents of the “Personal” certificate store.
     /// On MacOS, the objects come from the contents of the “Session” keychain. On Linux, this function is currently unavailable.
     #[wasm_bindgen(method, structural, js_name = "getSoftToken")]
-    async fn get_soft_token(this: &Scws) -> token::Token;
+    pub async fn get_soft_token(this: &Scws) -> token::Token;
 
     pub type ServiceResponse;
 
