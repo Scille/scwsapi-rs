@@ -58,8 +58,22 @@ extern "C" {
     ) -> Result<js_sys::ArrayBuffer, JsValue>;
 
     /// Decrypts the provided data using a private key. The operation will use PKCS#1 padding.
+    ///
+    /// The decryption algorithm to use as a javascript object by default if nothing is provided PKCS#1 will be used.
+    /// - for **RSA OAEP** algorithm should be a javascript object containing:
+    ///     - "type" : "oaep"
+    ///     - "hashAlg" : the hash algorithm, values can be one among "sha1", "sha224", "sha256", "sha384", "sha512"
+    ///     - "mgf" : the MGF for the OAEP, values can be one among "sha1", "sha224", "sha256", "sha384", "sha512"
+    /// - for **RSA RAW**
+    ///     - "type" : "raw"
+    /// - for PKCS1:
+    ///     - "type" : "pkcs1"
     #[wasm_bindgen(catch, method)]
-    pub async fn decrypt(this: &Key, ciphertext: &[u8]) -> Result<js_sys::ArrayBuffer, JsValue>;
+    pub async fn decrypt(
+        this: &Key,
+        ciphertext: &[u8],
+        algorithm: Option<JsValue>,
+    ) -> Result<js_sys::ArrayBuffer, JsValue>;
 }
 
 #[derive(serde::Serialize, Debug)]
@@ -101,4 +115,43 @@ impl TryFrom<&Pkcs1HashType> for JsValue {
     fn try_from(value: &Pkcs1HashType) -> Result<Self, Self::Error> {
         serde_wasm_bindgen::to_value(value)
     }
+}
+
+/// Allow configuring the decryption algorithm used by [`Key::decrypt`]
+#[derive(serde::Serialize, Debug)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum RsaEncryptionConfig {
+    #[serde(rename_all = "camelCase")]
+    Oaep {
+        hash_alg: RsaOaepHashAlg,
+        mgf: RsaOaepMaskType,
+    },
+    Raw,
+    Pkcs1,
+}
+
+impl TryFrom<&RsaEncryptionConfig> for JsValue {
+    type Error = serde_wasm_bindgen::Error;
+
+    fn try_from(value: &RsaEncryptionConfig) -> Result<Self, Self::Error> {
+        serde_wasm_bindgen::to_value(value)
+    }
+}
+
+#[derive(serde::Serialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum RsaOaepHashAlg {
+    Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
+}
+
+#[derive(serde::Serialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum RsaOaepMaskType {
+    Sha1,
+    Sha256,
+    Sha384,
+    Sha512,
 }

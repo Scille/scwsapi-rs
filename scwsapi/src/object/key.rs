@@ -74,17 +74,17 @@ impl PrivateKey {
         algorithm: EncryptionAlgorithm,
         ciphertext: &[u8],
     ) -> Result<Vec<u8>, DecryptError> {
-        match algorithm {
-            EncryptionAlgorithm::RsaPkcs1v15 => {
-                let raw_data = self
-                    .handle
-                    .decrypt(ciphertext)
-                    .await
-                    .map_err(DecryptError::Decrypt)?;
-                let data = js_sys::Uint8Array::new(&raw_data);
-                Ok(data.to_vec())
-            }
-        }
+        let config = scwsapi_sys::object::RsaEncryptionConfig::from(algorithm);
+        let js_config = (&config)
+            .try_into()
+            .map_err(DecryptError::CannotGenerateEncryptionConfig)?;
+        let raw_data = self
+            .handle
+            .decrypt(ciphertext, Some(js_config))
+            .await
+            .map_err(DecryptError::Decrypt)?;
+        let data = js_sys::Uint8Array::new(&raw_data);
+        Ok(data.to_vec())
     }
 }
 
@@ -105,10 +105,25 @@ pub enum SignHashError {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EncryptionAlgorithm {
     RsaPkcs1v15,
+    RsaOaepSha256,
+}
+
+impl From<EncryptionAlgorithm> for scwsapi_sys::object::RsaEncryptionConfig {
+    fn from(value: EncryptionAlgorithm) -> Self {
+        match value {
+            EncryptionAlgorithm::RsaPkcs1v15 => Self::Pkcs1,
+            EncryptionAlgorithm::RsaOaepSha256 => Self::Oaep {
+                hash_alg: scwsapi_sys::object::RsaOaepHashAlg::Sha256,
+                mgf: scwsapi_sys::object::RsaOaepMaskType::Sha256,
+            },
+        }
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum DecryptError {
+    #[error("cannot generate configuration for encryption: {}", .0)]
+    CannotGenerateEncryptionConfig(serde_wasm_bindgen::Error),
     #[error("cannot decrypt")]
     Decrypt(JsValue),
 }
