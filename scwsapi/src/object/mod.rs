@@ -5,6 +5,7 @@ pub use certificate::*;
 pub use key::*;
 use wasm_bindgen::JsValue;
 
+/// A [`token::Token`] object
 pub enum Object {
     Certificate(Certificate),
     PublicKey(PublicKey),

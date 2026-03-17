@@ -14,10 +14,14 @@ impl Deref for Token {
 }
 
 impl Token {
-    pub fn new(handle: scwsapi_sys::token::Token, provenance: crate::Provenance) -> Self {
+    pub(crate) fn new(handle: scwsapi_sys::token::Token, provenance: crate::Provenance) -> Self {
         Self { handle, provenance }
     }
 
+    /// List the objects present in the token
+    ///
+    /// > [!NOTE]
+    /// > Some objects need to have their pin unlocked to be visible.
     pub async fn iter_objects(&self) -> impl Iterator<Item = crate::object::Object> {
         self.handle
             .get_objects()

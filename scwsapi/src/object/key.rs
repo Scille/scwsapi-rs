@@ -35,6 +35,7 @@ impl PrivateKey {
         Self { handle, provenance }
     }
 
+    /// Sign the provided message with the key.
     pub async fn sign(
         &self,
         message: &[u8],
@@ -69,6 +70,7 @@ impl PrivateKey {
         Ok((algo, signature.to_vec()))
     }
 
+    /// Decrypt the `ciphertext` encrypted with the `algorithm` with the key.
     pub async fn decrypt(
         &self,
         algorithm: EncryptionAlgorithm,

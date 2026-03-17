@@ -24,6 +24,14 @@ impl Deref for Scws {
 }
 
 impl Scws {
+    /// Entrypoint to start the mutual authentication process between the
+    ///
+    /// ```text
+    /// middleware <-> client <-> server
+    /// ```
+    ///
+    /// More information about the arguments of the method can be found here:
+    /// [`SCWS.findService`](https://idopte.fr/scwsapi/javascript/2_API/envsetup.html#SCWS.findService)
     pub async fn find_service(
         &self,
         webapp_cert: &str,
@@ -57,6 +65,10 @@ impl Scws {
         })
     }
 
+    /// Method to finish the mutual authentication once the server has signed its challenge.
+    ///
+    /// More information about the argument of the method can be found here:
+    /// [`SCWS.createEnvironment`](https://idopte.fr/scwsapi/javascript/2_API/envsetup.html#SCWS.createEnvironment)
     pub async fn create_environment(&self, signature: &[u8]) -> Result<(), CreateEnvironmentError> {
         let encoded_signature = hex::encode(signature);
         self.0
@@ -65,6 +77,7 @@ impl Scws {
             .map_err(CreateEnvironmentError::CreateError)
     }
 
+    /// Refresh the reader list, returning it as a result
     pub async fn update_reader_list(&self) -> Vec<reader::Reader> {
         self.0
             .update_reader_list()
@@ -74,6 +87,7 @@ impl Scws {
             .collect()
     }
 
+    /// List working reader (that can be connected to) as [`token::Token`]
     #[must_use = "Tokens are handles that need to be disconnected when not in use"]
     pub fn iter_working_reader(&self) -> impl Stream<Item = token::Token> {
         futures::stream::iter(self.readers()).filter_map(|r| async move {
@@ -85,6 +99,7 @@ impl Scws {
         })
     }
 
+    /// Return a software [`token::Token`]
     pub async fn get_soft_token(&self) -> token::Token {
         let t = self.0.get_soft_token().await;
         token::Token::new(t, Provenance::Software)
@@ -102,8 +117,11 @@ pub enum FindServiceError {
 }
 
 pub struct ServiceResponse {
+    /// A challenge that need to be signed by the server.
     pub challenge: Vec<u8>,
+    /// The signature of the provided challenge.
     pub cryptogram: Vec<u8>,
+    /// The ID of the public key to use to verify the signature of the provided challenge.
     pub key_id: usize,
 }
 
