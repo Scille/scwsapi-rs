@@ -19,6 +19,9 @@ extern "C" {
     #[wasm_bindgen(method, getter)]
     pub fn version(this: &Scws) -> String;
 
+    /// Maintains the list of all known smart card readers in the system,
+    /// as an array of [`reader::Reader`] objects. This list is initially empty when the page loads,
+    /// until the environment is established using [`Scws::create_environment`].
     #[wasm_bindgen(method, getter)]
     pub fn readers(this: &Scws) -> Vec<reader::Reader>;
 
