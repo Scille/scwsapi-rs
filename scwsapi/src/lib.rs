@@ -9,7 +9,7 @@ use wasm_bindgen::JsValue;
 
 pub use object::{
     Certificate, DataContainer, DecryptError, EncryptionAlgorithm, Object, PrivateKey, PublicKey,
-    RequestPrivateKeyError, SignHashError, SignatureAlgorithm,
+    RequestPrivateKeyError, SignError, SignatureAlgorithm,
 };
 pub use reader::Reader;
 pub use token::Token;

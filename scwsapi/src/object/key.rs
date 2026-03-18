@@ -36,10 +36,7 @@ impl PrivateKey {
     }
 
     /// Sign the provided message with the key.
-    pub async fn sign(
-        &self,
-        message: &[u8],
-    ) -> Result<(SignatureAlgorithm, Vec<u8>), SignHashError> {
+    pub async fn sign(&self, message: &[u8]) -> Result<(SignatureAlgorithm, Vec<u8>), SignError> {
         let hash = sha2::Sha256::digest(message);
         // We have access to more advanced signature algorithm when the key is hardware backed.
         let (algo_config, algo) = if self.provenance == Provenance::Hardware {
@@ -49,14 +46,14 @@ impl PrivateKey {
                     salt_len: sha2::Sha256::output_size(),
                 })
                     .try_into()
-                    .map_err(SignHashError::CannotGenerateSignatureConfig)?,
+                    .map_err(SignError::CannotGenerateSignatureConfig)?,
                 SignatureAlgorithm::RsasaPssSha256,
             )
         } else {
             (
                 (&scwsapi_sys::object::Pkcs1HashType::Sha256)
                     .try_into()
-                    .map_err(SignHashError::CannotGenerateSignatureConfig)?,
+                    .map_err(SignError::CannotGenerateSignatureConfig)?,
                 SignatureAlgorithm::RsasaPkcs1Sha256,
             )
         };
@@ -64,7 +61,7 @@ impl PrivateKey {
             .handle
             .sign(hash.as_ref(), Some(algo_config))
             .await
-            .map_err(SignHashError::SignError)?;
+            .map_err(SignError::SignError)?;
         let signature = js_sys::Uint8Array::new(&raw_signature);
         log::debug!("Signature: {signature:?} {}", signature.length());
         Ok((algo, signature.to_vec()))
@@ -97,7 +94,7 @@ pub enum SignatureAlgorithm {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum SignHashError {
+pub enum SignError {
     #[error("cannot generate configuration for signature: {}", .0)]
     CannotGenerateSignatureConfig(serde_wasm_bindgen::Error),
     #[error("cannot sign")]
