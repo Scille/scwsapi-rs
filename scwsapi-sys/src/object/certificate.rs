@@ -71,8 +71,10 @@ extern "C" {
     #[derive(Debug, Clone)]
     pub type CertificateTrust;
 
+    /// Either the "ok" string if the certificate is valid according to the operating system criterias,
+    /// or an array of strings indicating the (possibly multiple) reasons why the certificate validity checks failed.
     #[wasm_bindgen(method, getter, js_name = "trustStatus")]
-    pub fn status(this: &CertificateTrust) -> InvalidTrustStatus;
+    pub fn status(this: &CertificateTrust) -> JsValue;
 
     #[wasm_bindgen(method, getter)]
     pub fn usages(this: &CertificateTrust) -> Vec<CertificateUsage>;
