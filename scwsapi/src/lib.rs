@@ -7,6 +7,13 @@ use std::ops::Deref;
 use futures::{Stream, StreamExt};
 use wasm_bindgen::JsValue;
 
+pub use object::{
+    Certificate, DataContainer, DecryptError, EncryptionAlgorithm, Object, PrivateKey, PublicKey,
+    RequestPrivateKeyError, SignHashError, SignatureAlgorithm,
+};
+pub use reader::Reader;
+pub use token::Token;
+
 pub struct Scws(scwsapi_sys::Scws);
 
 impl Default for Scws {
