@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
-use wasm_bindgen::JsValue;
+use scwsapi_sys::object::InvalidTrustStatus;
+use wasm_bindgen::{JsCast, JsValue};
 
 use crate::object::{Object, PrivateKey};
 
@@ -88,10 +89,49 @@ impl Certificate {
             })
             .find(|k| k.ck_id() == ck_id)
     }
+
+    pub async fn get_trust(&self) -> Result<CertificateTrust, JsValue> {
+        self.handle.get_trust().await.map(CertificateTrust)
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum RequestPrivateKeyError {
     #[error("login error while requesting private key")]
     LoginError(JsValue),
+}
+
+pub struct CertificateTrust(scwsapi_sys::object::CertificateTrust);
+
+impl Deref for CertificateTrust {
+    type Target = scwsapi_sys::object::CertificateTrust;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl CertificateTrust {
+    /// Return the trust status of the certificate
+    ///
+    /// ## Result
+    ///
+    /// When the certificate is not trusted, it return the reasons as error
+    pub fn trust_status(&self) -> Result<(), Vec<InvalidTrustStatus>> {
+        let raw_status = self.0.status();
+
+        if matches!(raw_status.dyn_ref::<js_sys::JsString>(), Some(s) if s == "ok") {
+            return Ok(());
+        }
+
+        Err(raw_status
+            .dyn_into::<js_sys::Array>()
+            .map(|raw_reasons| {
+                raw_reasons
+                    .into_iter()
+                    .filter_map(|v| InvalidTrustStatus::from_js_value(&v))
+                    .collect()
+            })
+            .unwrap_or_default())
+    }
 }
