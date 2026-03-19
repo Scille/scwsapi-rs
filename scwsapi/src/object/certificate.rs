@@ -147,7 +147,7 @@ impl CertificateTrust {
             .unwrap_or_default())
     }
 
-    pub fn cert_path(&self) -> impl Iterator<Item = Certificate> {
+    pub fn cert_path(&self) -> impl ExactSizeIterator<Item = Certificate> {
         self.handle
             .cert_path()
             .into_iter()
