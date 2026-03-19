@@ -3,7 +3,10 @@ use std::ops::Deref;
 use scwsapi_sys::object::InvalidTrustStatus;
 use wasm_bindgen::{JsCast, JsValue};
 
-use crate::object::{Object, PrivateKey};
+use crate::{
+    Provenance,
+    object::{Object, PrivateKey},
+};
 
 pub struct Certificate {
     handle: scwsapi_sys::object::Certificate,
@@ -91,7 +94,13 @@ impl Certificate {
     }
 
     pub async fn get_trust(&self) -> Result<CertificateTrust, JsValue> {
-        self.handle.get_trust().await.map(CertificateTrust)
+        self.handle
+            .get_trust()
+            .await
+            .map(|handle| CertificateTrust {
+                handle,
+                provenance: self.provenance,
+            })
     }
 }
 
@@ -101,13 +110,16 @@ pub enum RequestPrivateKeyError {
     LoginError(JsValue),
 }
 
-pub struct CertificateTrust(scwsapi_sys::object::CertificateTrust);
+pub struct CertificateTrust {
+    handle: scwsapi_sys::object::CertificateTrust,
+    provenance: Provenance,
+}
 
 impl Deref for CertificateTrust {
     type Target = scwsapi_sys::object::CertificateTrust;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.handle
     }
 }
 
@@ -117,8 +129,8 @@ impl CertificateTrust {
     /// ## Result
     ///
     /// When the certificate is not trusted, it return the reasons as error
-    pub fn trust_status(&self) -> Result<(), Vec<InvalidTrustStatus>> {
-        let raw_status = self.0.status();
+    pub fn status(&self) -> Result<(), Vec<InvalidTrustStatus>> {
+        let raw_status = self.handle.status();
 
         if matches!(raw_status.dyn_ref::<js_sys::JsString>(), Some(s) if s == "ok") {
             return Ok(());
@@ -133,5 +145,15 @@ impl CertificateTrust {
                     .collect()
             })
             .unwrap_or_default())
+    }
+
+    pub fn cert_path(&self) -> impl Iterator<Item = Certificate> {
+        self.handle
+            .cert_path()
+            .into_iter()
+            .map(|handle| Certificate {
+                handle,
+                provenance: self.provenance,
+            })
     }
 }
