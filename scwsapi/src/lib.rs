@@ -16,9 +16,16 @@ pub use token::Token;
 
 pub struct Scws(scwsapi_sys::Scws);
 
+#[cfg(feature = "auto-load-scws")]
 impl Default for Scws {
     fn default() -> Self {
-        Self(scwsapi_sys::SCWS.with(Clone::clone))
+        Self::from(scwsapi_sys::SCWS.with(Clone::clone))
+    }
+}
+
+impl From<scwsapi_sys::Scws> for Scws {
+    fn from(value: scwsapi_sys::Scws) -> Self {
+        Self(value)
     }
 }
 

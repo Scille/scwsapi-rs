@@ -1,7 +1,10 @@
 [package]
 name = "scwsapi"
-version = "0.5.1"
+version = "0.6.0"
 edition.workspace = true
+
+[features]
+auto-load-scws = ["scwsapi-sys/auto-load-scws"]
 
 [dependencies]
 scwsapi-sys = { workspace = true }

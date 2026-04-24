@@ -8,8 +8,10 @@ pub mod token;
 
 // We set a placeholder path `@lib_scwsapi.js` that should be overwritten by configuring your
 // webapp bundler to alias that path to the true path of `scwsapi.js`.
-#[wasm_bindgen(module = "@lib_scwsapi.js")]
+#[cfg_attr(feature = "auto-load-scws", wasm_bindgen(module = "@lib_scwsapi.js"))]
+#[cfg_attr(not(feature = "auto-load-scws"), wasm_bindgen)]
 extern "C" {
+    #[cfg(feature = "auto-load-scws")]
     #[wasm_bindgen(thread_local_v2)]
     pub static SCWS: Scws;
 
