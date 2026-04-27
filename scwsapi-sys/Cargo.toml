@@ -2,6 +2,7 @@
 name = "scwsapi-sys"
 version = "0.4.0"
 edition.workspace = true
+license.workspace = true
 
 [features]
 auto-load-scws = []
