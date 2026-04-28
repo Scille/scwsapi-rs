@@ -8,6 +8,7 @@ use crate::{
     object::{Object, PrivateKey},
 };
 
+#[derive(Debug, Clone)]
 pub struct Certificate {
     handle: scwsapi_sys::object::Certificate,
     pub provenance: crate::Provenance,
