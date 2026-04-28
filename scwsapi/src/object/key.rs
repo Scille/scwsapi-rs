@@ -47,14 +47,14 @@ impl PrivateKey {
                 })
                     .try_into()
                     .map_err(SignError::CannotGenerateSignatureConfig)?,
-                SignatureAlgorithm::RsasaPssSha256,
+                SignatureAlgorithm::RsassaPssSha256,
             )
         } else {
             (
                 (&scwsapi_sys::object::Pkcs1HashType::Sha256)
                     .try_into()
                     .map_err(SignError::CannotGenerateSignatureConfig)?,
-                SignatureAlgorithm::RsasaPkcs1Sha256,
+                SignatureAlgorithm::Pkcs1Sha256,
             )
         };
         let raw_signature = self
@@ -89,8 +89,8 @@ impl PrivateKey {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SignatureAlgorithm {
-    RsasaPssSha256,
-    RsasaPkcs1Sha256,
+    RsassaPssSha256,
+    Pkcs1Sha256,
 }
 
 #[derive(Debug, thiserror::Error)]
