@@ -17,6 +17,7 @@ impl PublicKey {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct PrivateKey {
     handle: scwsapi_sys::object::Key,
     pub provenance: crate::Provenance,
