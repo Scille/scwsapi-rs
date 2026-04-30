@@ -103,6 +103,10 @@ impl Certificate {
                 provenance: self.provenance,
             })
     }
+
+    pub fn ck_id(&self) -> Result<Vec<u8>, hex::FromHexError> {
+        hex::decode(self.handle.ck_id())
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
