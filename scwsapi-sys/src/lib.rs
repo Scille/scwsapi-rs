@@ -63,14 +63,14 @@ extern "C" {
 
     /// Hexadecimal string containing the random challenge that must be used to compute the remote server signature,
     /// prior to calling [`Scws::create_environment`].
-    #[wasm_bindgen(method, structural)]
+    #[wasm_bindgen(method, getter)]
     pub fn challenge(this: &ServiceResponse) -> JsString;
 
     /// Hexadecimal string containing the cryptogram to verify (the challenge given as input signed by SCWS local service private key).
-    #[wasm_bindgen(method, structural)]
+    #[wasm_bindgen(method, getter)]
     pub fn cryptogram(this: &ServiceResponse) -> JsString;
 
     /// Integer corresponding to the index of the public key to use among the keys in the IdoptePublicKeys file (provided by Idopte).
-    #[wasm_bindgen(method, structural)]
-    pub fn key_id(this: &ServiceResponse) -> usize;
+    #[wasm_bindgen(method, getter, js_name = "keyID")]
+    pub fn key_id(this: &ServiceResponse) -> JsString;
 }

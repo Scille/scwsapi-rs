@@ -70,7 +70,8 @@ impl Scws {
         }
         .map_err(FindServiceError::InvalidCryptogram)?;
 
-        let key_id = raw.key_id();
+        let key_id: usize = String::from(raw.key_id()).parse()
+        .map_err(FindServiceError::InvalidKeyId)?;
 
         Ok(ServiceResponse {
             challenge,
@@ -124,10 +125,12 @@ impl Scws {
 pub enum FindServiceError {
     #[error("cannot find service")]
     FindError(JsValue),
-    #[error("invalid service challenge value: {}", .0)]
+    #[error("invalid `challenge` value: {}", .0)]
     InvalidChallenge(hex::FromHexError),
-    #[error("invalid service cryptogram value: {}", .0)]
+    #[error("invalid `cryptogram` value: {}", .0)]
     InvalidCryptogram(hex::FromHexError),
+    #[error("invalid `keyID` value: {}", .0)]
+    InvalidKeyId(std::num::ParseIntError),
 }
 
 pub struct ServiceResponse {
