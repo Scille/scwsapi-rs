@@ -28,7 +28,7 @@ extern "C" {
     #[wasm_bindgen(method, getter, js_name = "algorithmName")]
     pub fn algorithm_name(this: &Key) -> Algorithm;
 
-    #[wasm_bindgen(method, getter, js_name = "getDetails")]
+    #[wasm_bindgen(method, js_name = "getDetails")]
     pub async fn get_details(this: &Key) -> JsValue;
 
     /// Signs the provided hash using a private key. For RSA keys, the operation will use PKCS#1 padding or PSS padding depending on given algorithm parameter. For EC keys, the returned signature is in RAW format.

@@ -62,8 +62,8 @@ extern "C" {
     pub fn application(this: &DataContainer) -> String;
 
     /// The data of the container
-    #[wasm_bindgen(method, getter)]
-    pub async fn getValue(this: &DataContainer) -> js_sys::Uint8Array;
+    #[wasm_bindgen(method, js_name = "getValue")]
+    pub async fn get_value(this: &DataContainer) -> js_sys::Uint8Array;
 }
 
 impl Debug for Object {
