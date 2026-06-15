@@ -50,7 +50,7 @@ extern "C" {
     ///
     /// For public objects (certificates and public keys),
     /// it is the PIN which grants access to the corresponding private key (association is determined by the [`Object::ck_id()`] attribute).
-    #[wasm_bindgen(method, getter)]
+    #[wasm_bindgen(method, getter, js_name = "pinNumber")]
     pub fn pin_number(this: &Object) -> usize;
 
     /// [SCWS.DataContainer](https://idopte.fr/scwsapi/javascript/2_API/objects.html#data-container-objects)
