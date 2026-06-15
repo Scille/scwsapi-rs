@@ -50,8 +50,10 @@ extern "C" {
     ///
     /// If updates are made to the reader list within the processing, the appropriate event callbacks are called.
     /// The resulting value is the updated `SCWS.readers` array itself.
+    // TODO: we used to return `Vec<crate::object::Object>` but it resulted
+    // wasm-bindgen generating some wasm code that crashes at runtime :/
     #[wasm_bindgen(method, structural, js_name = "updateReaderList")]
-    pub async fn update_reader_list(this: &Scws) -> Vec<reader::Reader>;
+    pub fn update_reader_list(this: &Scws) -> js_sys::Promise;
 
     /// The software token is a virtual cryptographic token containing the certificates and keys that are available on the local machine.
     /// On Windows, the objects comes from the contents of the “Personal” certificate store.

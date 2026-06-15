@@ -23,15 +23,21 @@ impl Token {
     /// > [!NOTE]
     /// > Some objects need to have their pin unlocked to be visible.
     pub async fn iter_objects(&self) -> impl Iterator<Item = crate::object::Object> {
-        self.handle
-            .get_objects()
+        let result = wasm_bindgen_futures::JsFuture::from(self.handle.get_objects())
             .await
-            .into_iter()
-            .inspect(|obj| log::trace!("Found object: {obj:?}"))
+            .expect("getObjects() Promise rejected");
+        js_sys::Array::from(&result)
+            .iter()
             .filter_map(|obj| {
+                use wasm_bindgen::JsCast as _;
+
+                log::trace!("Found object: {obj:?}");
+                let obj = obj.unchecked_into::<scwsapi_sys::object::Object>();
                 crate::object::Object::try_from((obj, self.provenance))
                     .inspect_err(|obj| log::warn!("Unsupported object {obj:?}"))
                     .ok()
             })
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 }

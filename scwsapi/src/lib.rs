@@ -70,8 +70,9 @@ impl Scws {
         }
         .map_err(FindServiceError::InvalidCryptogram)?;
 
-        let key_id: usize = String::from(raw.key_id()).parse()
-        .map_err(FindServiceError::InvalidKeyId)?;
+        let key_id: usize = String::from(raw.key_id())
+            .parse()
+            .map_err(FindServiceError::InvalidKeyId)?;
 
         Ok(ServiceResponse {
             challenge,
@@ -94,11 +95,14 @@ impl Scws {
 
     /// Refresh the reader list, returning it as a result
     pub async fn update_reader_list(&self) -> Vec<reader::Reader> {
-        self.0
-            .update_reader_list()
+        use wasm_bindgen::JsCast as _;
+
+        let result = wasm_bindgen_futures::JsFuture::from(self.0.update_reader_list())
             .await
-            .into_iter()
-            .map(From::from)
+            .expect("updateReaderList() Promise rejected");
+        js_sys::Array::from(&result)
+            .iter()
+            .map(|v| reader::Reader::from(v.unchecked_into::<scwsapi_sys::reader::Reader>()))
             .collect()
     }
 

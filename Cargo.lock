@@ -243,6 +243,7 @@ dependencies = [
  "sha2",
  "thiserror",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
